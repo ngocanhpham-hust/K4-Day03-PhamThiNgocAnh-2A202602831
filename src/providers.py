@@ -6,6 +6,8 @@ Hỗ trợ Native Tool Calling và chuyển đổi linh hoạt qua biến môi t
 import os
 import sys
 import json
+import re
+import time
 from typing import Dict, Any, List
 from dotenv import load_dotenv
 
@@ -35,29 +37,140 @@ class MockOfflineProvider(BaseLLMProvider):
         return f"[Mock Chatbot Response]: Xin chào! Tôi đã nhận được câu hỏi '{prompt}'. (Chế độ Chatbot không có Tool tra cứu dữ liệu thời gian thực)."
 
     def generate_with_tools(self, prompt: str, tools_schema: List[Dict[str, Any]], system_prompt: str = "") -> Dict[str, Any]:
-        prompt_lower = prompt.lower()
-        
-        # Mô phỏng nhận diện intent gọi Tool
-        if "sv2026001" in prompt_lower and "đặt lịch" in prompt_lower:
-            return {
-                "type": "tool_call",
-                "tool_name": "schedule_appointment",
-                "arguments": {"student_id": "SV2026001", "datetime_str": "14:00 15/09/2026", "advisor_name": "PGS.TS Nguyễn Văn A"},
-                "thought": "Người dùng yêu cầu đặt lịch hẹn tư vấn cho sinh viên SV2026001. Tôi sẽ gọi tool schedule_appointment."
-            }
-        elif "sv2026001" in prompt_lower or "tra cứu" in prompt_lower:
-            return {
-                "type": "tool_call",
-                "tool_name": "academic_query",
-                "arguments": {"student_id": "SV2026001"},
-                "thought": "Người dùng muốn tra cứu thông tin học vụ của sinh viên SV2026001. Tôi sẽ gọi tool academic_query."
-            }
-        else:
+        original_query = prompt.split("\n\nLỊCH SỬ THỰC THI", 1)[0]
+        query_lower = original_query.lower()
+        student_match = re.search(r"\bsv\d+\b", original_query, re.IGNORECASE)
+        student_id = student_match.group(0).upper() if student_match else None
+
+        observations = []
+        if "<OBSERVATIONS_JSON>" in prompt:
+            raw = prompt.split("<OBSERVATIONS_JSON>", 1)[1].split("</OBSERVATIONS_JSON>", 1)[0]
+            try:
+                observations = json.loads(raw)
+            except json.JSONDecodeError:
+                observations = []
+
+        completed_tools = [item.get("tool_name") for item in observations]
+        last_result = observations[-1].get("result", {}) if observations else {}
+        if last_result.get("status") == "NOT_FOUND":
             return {
                 "type": "text",
-                "content": f"[Mock Agent Response]: Xin chào! Quy chế học vụ VinUni yêu cầu sinh viên tích lũy tối thiểu 120 tín chỉ và duy trì GPA trên 2.0 để tốt nghiệp.",
-                "thought": "Câu hỏi chung về quy chế học vụ, trả lời trực tiếp không cần gọi Tool."
+                "content": last_result.get("message", "Không tìm thấy dữ liệu phù hợp."),
+                "thought": "Tool trả về NOT_FOUND nên tôi phản hồi đúng dữ liệu quan sát và không suy đoán."
             }
+
+        if "đặt lịch" in query_lower or "lịch hẹn" in query_lower:
+            if not student_id:
+                return {
+                    "type": "text",
+                    "content": "Bạn vui lòng cung cấp mã sinh viên để mình hỗ trợ đặt lịch tư vấn.",
+                    "thought": "Yêu cầu đặt lịch còn thiếu mã sinh viên nên cần hỏi lại."
+                }
+            date_match = re.search(r"\b\d{1,2}/\d{1,2}/\d{4}\b", original_query)
+            time_match = re.search(r"\b\d{1,2}:\d{2}(?:\s*(?:AM|PM))?\b", original_query, re.IGNORECASE)
+            if not date_match or not time_match:
+                return {
+                    "type": "text",
+                    "content": "Bạn muốn gặp cố vấn vào ngày và giờ cụ thể nào? Vui lòng cho mình thời gian theo định dạng HH:MM DD/MM/YYYY.",
+                    "thought": "Yêu cầu đặt lịch còn thiếu ngày hoặc giờ nên cần hỏi lại."
+                }
+            if "academic_query" not in completed_tools:
+                return {
+                    "type": "tool_call",
+                    "tool_name": "academic_query",
+                    "arguments": {"student_id": student_id},
+                    "thought": "Cần tra cứu hồ sơ để xác định đúng cố vấn trước khi đặt lịch."
+                }
+            if "schedule_appointment" not in completed_tools:
+                academic = next(
+                    (item.get("result", {}) for item in observations if item.get("tool_name") == "academic_query"),
+                    {}
+                )
+                advisor = academic.get("data", {}).get("advisor", "Cố vấn học tập")
+                datetime_str = f"{time_match.group(0).upper().replace(' AM', '').replace(' PM', '')} {date_match.group(0)}"
+                return {
+                    "type": "tool_call",
+                    "tool_name": "schedule_appointment",
+                    "arguments": {
+                        "student_id": student_id,
+                        "datetime_str": datetime_str,
+                        "advisor_name": advisor
+                    },
+                    "thought": "Đã có tên cố vấn từ Observation; tiếp tục gọi tool đặt lịch để hoàn thành mục tiêu."
+                }
+            appointment = next(
+                (item.get("result", {}) for item in observations if item.get("tool_name") == "schedule_appointment"),
+                {}
+            )
+            return {
+                "type": "text",
+                "content": appointment.get("message", "Lịch tư vấn đã được đặt thành công."),
+                "thought": "Cả bước tra cứu cố vấn và đặt lịch đều đã hoàn tất."
+            }
+
+        if "lịch thi" in query_lower or re.search(r"\bthi\b", query_lower):
+            if not student_id:
+                return {
+                    "type": "text",
+                    "content": "Bạn vui lòng cung cấp mã sinh viên để mình tra cứu lịch thi.",
+                    "thought": "Thiếu mã sinh viên nên cần hỏi lại trước khi gọi tool."
+                }
+            if "exam_schedule_query" not in completed_tools:
+                return {
+                    "type": "tool_call",
+                    "tool_name": "exam_schedule_query",
+                    "arguments": {"student_id": student_id},
+                    "thought": "Người dùng cần dữ liệu lịch thi nên tôi gọi tool exam_schedule_query."
+                }
+            exams = last_result.get("exams", [])
+            lines = [f"Lịch thi của {student_id} gồm {len(exams)} môn:"]
+            for exam in exams:
+                lines.append(
+                    f"- {exam['course_name']} ({exam['course_code']}), {exam['exam_datetime']}, "
+                    f"phòng {exam['exam_room']}, lớp thi {exam['exam_class_code']}; "
+                    f"{exam['exam_format']}; {exam['exam_content']}."
+                )
+            return {
+                "type": "text",
+                "content": "\n".join(lines),
+                "thought": "Đã có đầy đủ lịch thi từ Observation nên tôi tổng hợp câu trả lời."
+            }
+
+        if student_id or "tra cứu" in query_lower or "gpa" in query_lower or "cpa" in query_lower:
+            if not student_id:
+                return {
+                    "type": "text",
+                    "content": "Bạn vui lòng cung cấp mã sinh viên để mình tra cứu thông tin học vụ.",
+                    "thought": "Thiếu mã sinh viên nên cần hỏi lại trước khi gọi tool."
+                }
+            if "academic_query" not in completed_tools:
+                return {
+                    "type": "tool_call",
+                    "tool_name": "academic_query",
+                    "arguments": {"student_id": student_id},
+                    "thought": "Người dùng muốn tra cứu hồ sơ và điểm nên tôi gọi tool academic_query."
+                }
+            student = last_result.get("data", {})
+            lines = [
+                f"Kết quả học tập của {student.get('full_name', '')} ({student_id}): CPA {student.get('cpa', '')}."
+            ]
+            for semester in student.get("semesters", []):
+                courses = ", ".join(
+                    f"{course['course_name']} ({course['course_code']}): {course['grade']}"
+                    for course in semester.get("courses", [])
+                )
+                lines.append(f"- {semester['semester']}: GPA {semester['gpa']}; {courses}.")
+            return {
+                "type": "text",
+                "content": "\n".join(lines),
+                "thought": "Đã nhận đủ hồ sơ và bảng điểm từ Observation nên tôi tổng hợp câu trả lời."
+            }
+
+        return {
+            "type": "text",
+            "content": "Đây là bản demo trợ lý học vụ. Mình có thể tra cứu GPA/CPA, lịch thi và hỗ trợ đặt lịch với cố vấn.",
+            "thought": "Câu hỏi chung có thể trả lời trực tiếp mà không cần gọi tool."
+        }
 
 
 class GeminiProvider(BaseLLMProvider):
@@ -65,6 +178,7 @@ class GeminiProvider(BaseLLMProvider):
     def __init__(self, api_key: str = None, model: str = None):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
         self.model_name = model or os.getenv("LLM_MODEL") or "gemini-2.5-flash"
+        self._api_retry_depth = 0
 
     def generate(self, prompt: str, system_prompt: str = "") -> str:
         if not self.api_key or self.api_key == "your_gemini_api_key_here":
@@ -131,8 +245,31 @@ class GeminiProvider(BaseLLMProvider):
                 }
 
         except Exception as e:
-            print(f"⚠️ [Gemini API Warning]: Không thể kết nối live API ({str(e)}). Tự động fallback về Mock.")
-            return MockOfflineProvider().generate_with_tools(prompt, tools_schema, system_prompt)
+            error_text = str(e)
+            is_rate_limit = "429" in error_text or "RESOURCE_EXHAUSTED" in error_text
+            is_daily_quota = "PerDay" in error_text or "per day" in error_text.lower()
+            is_transient = any(
+                marker in error_text.lower()
+                for marker in ("server disconnected", "timed out", "connection reset", "temporarily unavailable")
+            )
+            if ((is_rate_limit and not is_daily_quota) or is_transient) and self._api_retry_depth < 2:
+                retry_match = re.search(r"retry in\s+([\d.]+)s", error_text, re.IGNORECASE)
+                wait_seconds = min(
+                    60.0,
+                    (float(retry_match.group(1)) + 2) if retry_match else (3.0 if is_transient else 60.0)
+                )
+                print(f"⏳ [Gemini Retry]: Chờ {wait_seconds:.1f}s rồi thử lại...")
+                self._api_retry_depth += 1
+                try:
+                    time.sleep(wait_seconds)
+                    return self.generate_with_tools(prompt, tools_schema, system_prompt)
+                finally:
+                    self._api_retry_depth -= 1
+            print(f"⚠️ [Gemini API Warning]: Không thể kết nối live API ({error_text}). Tự động fallback về Mock.")
+            fallback = MockOfflineProvider().generate_with_tools(prompt, tools_schema, system_prompt)
+            fallback["llm_source"] = "mock_fallback"
+            fallback["api_error"] = error_text
+            return fallback
 
 
 class OpenAIProvider(BaseLLMProvider):

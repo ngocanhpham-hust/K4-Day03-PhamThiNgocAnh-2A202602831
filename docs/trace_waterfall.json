@@ -1,29 +1,14 @@
 [
   {
+    "run_id": "f8e57d6489",
+    "timestamp": "2026-09-13T17:21:29+07:00",
     "step": 1,
-    "query": "Chào bạn, bạn có thể giới thiệu quy chế học vụ cơ bản của Đại học VinUni không?",
+    "query": "quy chế học vụ của VinUni là gì?",
     "action_type": "FINAL_ANSWER",
-    "thought": "Câu hỏi chung về quy chế học vụ, trả lời trực tiếp không cần gọi Tool.",
-    "output": "[Mock Agent Response]: Xin chào! Quy chế học vụ VinUni yêu cầu sinh viên tích lũy tối thiểu 120 tín chỉ và duy trì GPA trên 2.0 để tốt nghiệp.",
-    "latency_ms": 2845.93
-  },
-  {
-    "step": 1,
-    "query": "Hãy tra cứu thông tin học vụ của sinh viên SV2026001.",
-    "action_type": "TOOL_EXECUTION",
-    "tool_name": "academic_query",
-    "arguments": {
-      "student_id": "SV2026001"
-    },
-    "observation": {},
-    "latency_ms": 799.12
-  },
-  {
-    "step": 2,
-    "query": "Hãy tra cứu thông tin học vụ của sinh viên SV2026001.",
-    "action_type": "FINAL_ANSWER",
-    "thought": "Tổng hợp kết quả từ MCP Server thành công.",
-    "output": "Chưa thể trả lời chi tiết do chưa nhận được dữ liệu từ MCP Server (hãy hoàn thành TODO 2.1).",
-    "latency_ms": 10.0
+    "llm_provider": "GeminiProvider",
+    "llm_source": "mock_fallback",
+    "thought": "Câu hỏi chung có thể trả lời trực tiếp mà không cần gọi tool.",
+    "output": "Đây là bản demo trợ lý học vụ. Mình có thể tra cứu GPA/CPA, lịch thi và hỗ trợ đặt lịch với cố vấn.",
+    "latency_ms": 1228.81
   }
 ]

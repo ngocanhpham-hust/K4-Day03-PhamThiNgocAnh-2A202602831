@@ -1,0 +1,56 @@
+{
+  "SV2026001": {
+    "full_name": "Nguyễn Văn An",
+    "class": "AI-K4",
+    "email": "an.nv@vinuni.edu.vn",
+    "status": "Đang học",
+    "advisor": "PGS.TS Nguyễn Văn A",
+    "cpa": 3.72,
+    "semesters": [
+      {
+        "semester": "Fall 2025",
+        "gpa": 3.65,
+        "courses": [
+          {"course_code": "COMP1010", "course_name": "Nhập môn lập trình", "credits": 4, "grade": "A", "grade_point": 4.0},
+          {"course_code": "MATH1020", "course_name": "Giải tích I", "credits": 4, "grade": "B+", "grade_point": 3.5},
+          {"course_code": "PHYS1010", "course_name": "Vật lý đại cương", "credits": 3, "grade": "B+", "grade_point": 3.5}
+        ]
+      },
+      {
+        "semester": "Spring 2026",
+        "gpa": 3.79,
+        "courses": [
+          {"course_code": "COMP1020", "course_name": "Cấu trúc dữ liệu và giải thuật", "credits": 4, "grade": "A", "grade_point": 4.0},
+          {"course_code": "MATH2020", "course_name": "Xác suất và thống kê", "credits": 3, "grade": "A-", "grade_point": 3.7},
+          {"course_code": "ENG1020", "course_name": "Viết học thuật", "credits": 3, "grade": "B+", "grade_point": 3.5}
+        ]
+      }
+    ]
+  },
+  "SV2026002": {
+    "full_name": "Trần Thị Bình",
+    "class": "AI-K4",
+    "email": "binh.tt@vinuni.edu.vn",
+    "status": "Đang học",
+    "advisor": "TS. Lê Thị B",
+    "cpa": 3.6,
+    "semesters": [
+      {
+        "semester": "Fall 2025",
+        "gpa": 3.5,
+        "courses": [
+          {"course_code": "COMP1010", "course_name": "Nhập môn lập trình", "credits": 4, "grade": "B+", "grade_point": 3.5},
+          {"course_code": "MATH1020", "course_name": "Giải tích I", "credits": 4, "grade": "B+", "grade_point": 3.5}
+        ]
+      },
+      {
+        "semester": "Spring 2026",
+        "gpa": 3.7,
+        "courses": [
+          {"course_code": "COMP1020", "course_name": "Cấu trúc dữ liệu và giải thuật", "credits": 4, "grade": "A-", "grade_point": 3.7},
+          {"course_code": "MATH2020", "course_name": "Xác suất và thống kê", "credits": 3, "grade": "A-", "grade_point": 3.7}
+        ]
+      }
+    ]
+  }
+}

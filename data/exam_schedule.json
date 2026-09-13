@@ -1,0 +1,51 @@
+{
+  "SV2026001": [
+    {
+      "course_name": "Cấu trúc dữ liệu và giải thuật",
+      "course_code": "COMP1020",
+      "exam_room": "C401",
+      "exam_datetime": "08:00 28/09/2026",
+      "exam_class_code": "COMP1020-E01",
+      "exam_format": "Trắc nghiệm và tự luận trên giấy",
+      "exam_content": "40 câu trắc nghiệm và 2 câu tự luận trong 90 phút"
+    },
+    {
+      "course_name": "Xác suất và thống kê",
+      "course_code": "MATH2020",
+      "exam_room": "B203",
+      "exam_datetime": "13:30 30/09/2026",
+      "exam_class_code": "MATH2020-E02",
+      "exam_format": "Tự luận trên giấy",
+      "exam_content": "5 câu tự luận trong 120 phút"
+    },
+    {
+      "course_name": "Viết học thuật",
+      "course_code": "ENG1020",
+      "exam_room": "D105",
+      "exam_datetime": "09:30 02/10/2026",
+      "exam_class_code": "ENG1020-E01",
+      "exam_format": "Bài viết trên máy tính",
+      "exam_content": "1 bài luận 1.000–1.200 từ trong 120 phút"
+    }
+  ],
+  "SV2026002": [
+    {
+      "course_name": "Cấu trúc dữ liệu và giải thuật",
+      "course_code": "COMP1020",
+      "exam_room": "C402",
+      "exam_datetime": "08:00 28/09/2026",
+      "exam_class_code": "COMP1020-E02",
+      "exam_format": "Trắc nghiệm và tự luận trên giấy",
+      "exam_content": "40 câu trắc nghiệm và 2 câu tự luận trong 90 phút"
+    },
+    {
+      "course_name": "Xác suất và thống kê",
+      "course_code": "MATH2020",
+      "exam_room": "B204",
+      "exam_datetime": "13:30 30/09/2026",
+      "exam_class_code": "MATH2020-E03",
+      "exam_format": "Tự luận trên giấy",
+      "exam_content": "5 câu tự luận trong 120 phút"
+    }
+  ]
+}

@@ -44,7 +44,7 @@ python src/app.py --all
 **Kỳ vọng Output màn hình:**
 ```text
 ✅ [MOCK OFFLINE MODE PASS]: Môi trường đã sẵn sàng! 
-📊 [KẾT QUẢ TEST SUITE]: 2 Đã chạy (TC01, TC02 mẫu) | 3 Đang chờ viết câu hỏi (TODO)
+📊 [KẾT QUẢ TEST SUITE]: Đã thực thi 5/5 Test Cases | 0 Test Cases đang chờ điền câu hỏi (TODO)
 ```
 
 > 🔑 **QUY ĐỊNH BẮT BUỘC VỀ API KEY VÀ NỘP BÀI (SUBMISSION REQUIREMENT):**  
@@ -128,3 +128,26 @@ Học viên làm bài lần lượt theo đúng luồng 3 bước tinh giản d�
 | **2. ReAct Loop & MCP Integration** | **35%** | Vòng lặp ReAct chạy mượt mà qua Native Tool Calling & MCP Server **trên LLM API thật (Gemini/OpenAI)**. | Code trong `src/mcp_server.py` + `src/tools.py` + `src/app.py` + Log API thật. |
 | **3. Waterfall Trace & Observation** | **25%** | File log `trace_waterfall.json` trích xuất đầy đủ chuỗi suy luận Thought $\rightarrow$ Action $\rightarrow$ Observation. | File log `docs/trace_waterfall.json` + `docs/trace_eval.md`. |
 | **4. Git Repository & Submission** | **15%** | Cấu trúc Repo sạch sẽ, commit chuẩn chỉ và nộp đúng hạn trên LMS VLearn. | Link Repo GitHub cá nhân. |
+
+---
+
+## 🖥️ 7. CHẠY PRODUCT DEMO (STREAMLIT UI)
+
+Sau khi cài thư viện, khởi động giao diện demo bằng lệnh:
+
+```bash
+streamlit run src/ui.py
+```
+
+Giao diện gồm 5 khu vực: Trợ lý AI và so sánh Chatbot/ReAct Agent, bảng điểm
+GPA/CPA, lịch thi, lịch tư vấn đã lưu và Waterfall Trace phục vụ báo cáo với Lab Coach.
+
+Dữ liệu demo được tách khỏi mã nguồn:
+
+```text
+data/students.json       # Hồ sơ, GPA từng kỳ, CPA và điểm từng môn
+data/exam_schedule.json  # Lịch thi chi tiết
+data/appointments.json   # Lịch tư vấn được tạo trong quá trình chạy
+```
+
+Mã sinh viên dùng để demo: `SV2026001` và `SV2026002`.
